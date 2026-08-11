@@ -1,12 +1,11 @@
-package ru.burdak.mainservice;
+package ru.burdak.statservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MainServiceApplication {
-
+public class StatServiceApplication {
     public static void main(String[] args) {
-        SpringApplication.run(MainServiceApplication.class, args);
+        SpringApplication.run(StatServiceApplication.class, args);
     }
 }

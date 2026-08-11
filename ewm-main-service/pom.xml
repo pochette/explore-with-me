@@ -10,7 +10,18 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>main-service</artifactId>
-    <name>main-service</name>
+    <artifactId>ewm-main-service</artifactId>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 </project>
