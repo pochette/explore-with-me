@@ -6,12 +6,11 @@ import org.hibernate.proxy.HibernateProxy;
 
 import java.util.Objects;
 
-@Getter
-@Setter
-@ToString
-@RequiredArgsConstructor
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Table(name = "catrgories")
+@Table(name = "categories")
 public class Category {
 
     @Id
@@ -19,6 +18,7 @@ public class Category {
     private Long id;
 
     @Column(name = "name", nullable = false, unique = true, length = 50)
+    private String name;
 
     @Override
     public final boolean equals(Object o) {
