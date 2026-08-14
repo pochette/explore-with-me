@@ -3,14 +3,14 @@ package ru.burdak.mainservice.model;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
-import ru.burdak.mainservice.dto.UserShortDto;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
 @Table(name = "events")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Event {
@@ -34,6 +34,7 @@ public class Event {
     @Column(name = "created_on", nullable = false)
     private LocalDateTime createdOn;
 
+    @Column(name = "description",nullable = false)
     private String description;
 
     @Column(name = "event_date", nullable = false)
@@ -50,14 +51,17 @@ public class Event {
     @Column(nullable = false)
     private Boolean paid;
 
+    @Column(name = "participant_limit", nullable = false)
     private Integer participantLimit;
 
+    @Column(name = "published_on", nullable = false)
     private LocalDateTime publishedOn;
 
     @Column(name = "request_moderation")
     private Boolean requestModeration;
 
     @Enumerated(value = EnumType.STRING)
+    @Column(nullable = false)
     private EventState state;
 
     @Column(nullable = false)
@@ -67,15 +71,22 @@ public class Event {
 
     @Override
     public final int hashCode() {
-        return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
+        return this instanceof HibernateProxy ? ((HibernateProxy) this)
+            .getHibernateLazyInitializer()
+            .getPersistentClass()
+            .hashCode() : getClass().hashCode();
     }
 
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;
         if (o == null) return false;
-        Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
-        Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
+        Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o)
+            .getHibernateLazyInitializer()
+            .getPersistentClass() : o.getClass();
+        Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this)
+            .getHibernateLazyInitializer()
+            .getPersistentClass() : this.getClass();
         if (thisEffectiveClass != oEffectiveClass) return false;
         Event event = (Event) o;
         return getId() != null && Objects.equals(getId(), event.getId());

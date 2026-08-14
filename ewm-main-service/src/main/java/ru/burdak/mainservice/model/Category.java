@@ -20,6 +20,7 @@ public class Category {
     @Column(name = "name", nullable = false, unique = true, length = 50)
     private String name;
 
+
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;

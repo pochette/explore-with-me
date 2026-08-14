@@ -1,17 +1,12 @@
 package ru.burdak.mainservice.model;
 
 import jakarta.persistence.*;
-import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.util.Objects;
 
 @Entity
 @Table(name = "users", schema = "public")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,6 +17,39 @@ public class User {
 
     @Column(name = "name", nullable = false, length = 32)
     private String name;
+
+    public User() {
+    }
+
+    public User(Long id, String email, String name) {
+        this.id = id;
+        this.email = email;
+        this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public final int hashCode() {
+        return this instanceof HibernateProxy ? ((HibernateProxy) this)
+            .getHibernateLazyInitializer()
+            .getPersistentClass()
+            .hashCode() : getClass().hashCode();
+    }
 
     @Override
     public final boolean equals(Object o) {
@@ -40,11 +68,11 @@ public class User {
         return getId() != null && Objects.equals(getId(), user.getId());
     }
 
-    @Override
-    public final int hashCode() {
-        return this instanceof HibernateProxy ? ((HibernateProxy) this)
-            .getHibernateLazyInitializer()
-            .getPersistentClass()
-            .hashCode() : getClass().hashCode();
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

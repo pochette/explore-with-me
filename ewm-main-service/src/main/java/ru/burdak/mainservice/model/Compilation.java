@@ -1,11 +1,12 @@
 package ru.burdak.mainservice.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
+import java.util.HashSet;
+import java.util.Set;
+
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -16,14 +17,15 @@ public class Compilation {
     private Long id;
 
     @Column(nullable = false)
-    private Boolean pined;
+    private Boolean pinned;
 
     @Column(nullable = false)
     private String title;
 
-    //TODO дописать
-    @ManyToMany(fetch = FetchType.EAGER)
-
-
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "compilation_events",
+        joinColumns = @JoinColumn(name = "compilation_id"),
+        inverseJoinColumns = @JoinColumn(name = "event_id"))
+    private Set<Event> events = new HashSet<>();
 
 }
