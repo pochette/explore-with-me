@@ -1,10 +1,14 @@
 package ru.burdak.mainservice.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.util.Objects;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "users", schema = "public")
 public class User {
@@ -24,22 +28,6 @@ public class User {
     public User(Long id, String email, String name) {
         this.id = id;
         this.email = email;
-        this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
         this.name = name;
     }
 
@@ -68,11 +56,4 @@ public class User {
         return getId() != null && Objects.equals(getId(), user.getId());
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 }

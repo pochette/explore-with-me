@@ -1,4 +1,4 @@
-package ru.burdak.mainservice.dto;
+package ru.burdak.mainservice.dto.location;
 
 import jakarta.validation.constraints.NotNull;
 

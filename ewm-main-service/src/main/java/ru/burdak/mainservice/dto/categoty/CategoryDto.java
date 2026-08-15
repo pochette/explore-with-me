@@ -1,4 +1,4 @@
-package ru.burdak.mainservice.dto;
+package ru.burdak.mainservice.dto.categoty;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

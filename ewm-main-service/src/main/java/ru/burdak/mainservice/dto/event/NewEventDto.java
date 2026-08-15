@@ -1,9 +1,9 @@
-package ru.burdak.mainservice.dto;
+package ru.burdak.mainservice.dto.event;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
-import org.springframework.beans.factory.annotation.Value;
+import ru.burdak.mainservice.dto.location.LocationDto;
 
 import java.time.LocalDateTime;
 

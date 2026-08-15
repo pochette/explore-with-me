@@ -1,9 +1,11 @@
-package ru.burdak.mainservice.dto;
+package ru.burdak.mainservice.dto.event;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import ru.burdak.mainservice.dto.user.UserShortDto;
+import ru.burdak.mainservice.dto.categoty.CategoryDto;
 import ru.burdak.mainservice.model.Event;
 
 import java.time.LocalDateTime;
