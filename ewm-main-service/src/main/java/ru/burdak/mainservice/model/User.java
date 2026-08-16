@@ -1,7 +1,9 @@
 package ru.burdak.mainservice.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
 
@@ -10,6 +12,7 @@ import java.util.Objects;
 @Setter
 @Getter
 @Entity
+@NoArgsConstructor @AllArgsConstructor
 @Table(name = "users", schema = "public")
 public class User {
     @Id
@@ -22,14 +25,6 @@ public class User {
     @Column(name = "name", nullable = false, length = 32)
     private String name;
 
-    public User() {
-    }
-
-    public User(Long id, String email, String name) {
-        this.id = id;
-        this.email = email;
-        this.name = name;
-    }
 
     @Override
     public final int hashCode() {

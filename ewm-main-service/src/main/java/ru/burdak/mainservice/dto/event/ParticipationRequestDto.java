@@ -1,4 +1,4 @@
-package ru.burdak.mainservice.dto.user;
+package ru.burdak.mainservice.dto.event;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import ru.burdak.mainservice.model.ParticipationRequestStatus;

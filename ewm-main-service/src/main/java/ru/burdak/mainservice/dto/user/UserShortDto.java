@@ -1,5 +1,11 @@
     package ru.burdak.mainservice.dto.user;
 
-    public record UserShortDto(Long id, String name) {
+    import jakarta.validation.constraints.NotBlank;
+
+    public record UserShortDto(
+        Long id,
+
+        @NotBlank
+        String name) {
 
     }

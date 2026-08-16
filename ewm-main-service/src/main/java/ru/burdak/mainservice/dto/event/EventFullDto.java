@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import ru.burdak.mainservice.dto.location.LocationDto;
 import ru.burdak.mainservice.dto.user.UserShortDto;
-import ru.burdak.mainservice.dto.categoty.CategoryDto;
+import ru.burdak.mainservice.dto.category.CategoryDto;
 import ru.burdak.mainservice.model.EventState;
 
 import java.time.LocalDateTime;
