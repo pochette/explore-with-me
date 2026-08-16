@@ -1,6 +1,7 @@
 package ru.burdak.mainservice.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,10 +20,10 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "email", unique = true, nullable = false, length = 32)
+    @Column(name = "email", unique = true, nullable = false, length = 254)
     private String email;
 
-    @Column(name = "name", nullable = false, length = 32)
+    @Column(name = "name", nullable = false, length = 250)
     private String name;
 
 
