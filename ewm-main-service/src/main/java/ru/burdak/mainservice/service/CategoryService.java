@@ -8,6 +8,8 @@ import ru.burdak.mainservice.dto.category.NewCategoryDto;
 
 public interface CategoryService {
 
+    void deleteCategory(HttpServletRequest request, Long catId);
+
     CategoryDto patchCategoryAdmin(HttpServletRequest request, Long catId, CategoryDto categoryDto);
 
     CategoryDto postNewCategory(HttpServletRequest request, NewCategoryDto newCategoryDto);

@@ -13,12 +13,30 @@ import ru.burdak.mainservice.exception.NotFoundException;
 import ru.burdak.mainservice.mapper.CategoryMapper;
 import ru.burdak.mainservice.model.Category;
 import ru.burdak.mainservice.repository.CategoryRepository;
+import ru.burdak.mainservice.repository.EventRepository;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
+    private final EventRepository eventRepository;
+
+    @Override
+    @Transactional
+    public void deleteCategory(HttpServletRequest request, Long catId) {
+        if (!categoryRepository.existsById((catId))) {
+            throw new NotFoundException("Category with id " + catId + "  was not found");
+        }
+        if (eventRepository.existsByCategory_Id(catId)) {
+            throw new ConflictException("The category is not empty");
+        }
+
+        categoryRepository.deleteById(catId);
+
+
+
+    }
 
     @Transactional
     @Override

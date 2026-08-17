@@ -34,6 +34,7 @@ public class AdminUserController {
                                   @RequestParam(name = "size", defaultValue = "10", required = false) @Positive
                                   Integer size) {
         log.info("{} {}?{}", request.getMethod(), request.getRequestURI(), request.getQueryString());
+        log.info("Getting users with ids: {}, from: {}, size: {}", ids, from, size);
         ids = ids == null ? Collections.emptyList() : ids;
         return userService.getUsers(request, ids, from, size);
     }
@@ -43,6 +44,7 @@ public class AdminUserController {
     public UserDto postNewUser(HttpServletRequest request,
                                @RequestBody @Valid NewUserRequest newUserRequest) {
         log.info("{} {}?{}", request.getMethod(), request.getRequestURI(), request.getQueryString());
+        log.info("New user request: {}", newUserRequest);
         return userService.postNewUser(request, newUserRequest);
     }
 
@@ -51,6 +53,7 @@ public class AdminUserController {
     public void deleteUser(HttpServletRequest request,
                            @PathVariable("userId") @Positive Long id) {
         log.info("{} {}?{}", request.getMethod(), request.getRequestURI(), request.getQueryString());
+        log.info("Deleting user with id: {}", id);
         userService.deleteUser(request, id);
     }
 }

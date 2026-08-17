@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import ru.burdak.mainservice.dto.location.LocationDto;
-import ru.burdak.mainservice.model.StateAction;
+import ru.burdak.mainservice.model.UserStateAction;
 
 import java.time.LocalDateTime;
 
@@ -33,7 +33,7 @@ public record UpdateEventUserRequest(
 
     Boolean requestModeration,
 
-    StateAction stateAction,
+    UserStateAction stateAction,
 
     @NotBlank
     @Size(min = 3, max = 120)

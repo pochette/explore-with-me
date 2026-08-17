@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import ru.burdak.mainservice.dto.location.LocationDto;
+import ru.burdak.mainservice.validation.EventDateAfterHours;
 
 import java.time.LocalDateTime;
 
@@ -24,6 +25,7 @@ public record NewEventDto(
     @NotNull
     @Future
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @EventDateAfterHours(hours = 2)
     LocalDateTime eventDate,
 
     @NotNull

@@ -25,6 +25,8 @@ public class AdminCategoryController {
     public ResponseEntity<CategoryDto> postNewCategory(HttpServletRequest request,
                                                        @RequestBody @Valid NewCategoryDto newCategoryDto) {
         log.info("{} {}?{}", request.getMethod(), request.getRequestURI(), request.getQueryString());
+        log.info("Получен запрос на добавление новой категории: {}", newCategoryDto);
+
         return new ResponseEntity<>(
             categoryService.postNewCategory(request, newCategoryDto),
             HttpStatus.CREATED);
@@ -32,11 +34,25 @@ public class AdminCategoryController {
 
     @PatchMapping("/{catId}")
     public ResponseEntity<CategoryDto> patchCategoryDto(HttpServletRequest request,
-        @PathVariable(name = "catId", required = true) @Positive Long catId,
-        @RequestBody @Valid CategoryDto categoryDto) {
+                                                        @PathVariable(name = "catId", required = true) @Positive
+                                                        Long catId,
+                                                        @RequestBody @Valid CategoryDto categoryDto) {
+        log.info("{} {}?{}", request.getMethod(), request.getRequestURI(), request.getQueryString());
+        log.info("Получен запрос на изменение категории с id {}", catId);
+        log.info("Новые данные категории: {}", categoryDto);
         return new ResponseEntity<>(
             categoryService.patchCategoryAdmin(request, catId, categoryDto),
             HttpStatus.OK);
 
+    }
+
+
+    @DeleteMapping("/{catId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCategory(HttpServletRequest request,
+                               @PathVariable(name = "catId", required = true) @Positive Long catId) {
+        log.info("{} {}?{}", request.getMethod(), request.getRequestURI(), request.getQueryString());
+        log.info("Получен запрос на удаление категории {} ", catId);
+        categoryService.deleteCategory(request, catId);
     }
 }

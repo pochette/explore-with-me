@@ -19,6 +19,9 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * Краткое описание события
+     */
     @Column(name = "annotation", nullable = false)
     private String annotation;
 
@@ -27,46 +30,81 @@ public class Event {
     @ToString.Exclude
     private Category category;
 
+    /**
+     * Количество одобренных заявок на участие в данном событии
+     */
     @Column(name = "confirmed_requests")
     private Integer confirmedRequests;
 
-    //TODO в ДТO добавить аннотацию: @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss") над полем
+    /**
+     * Дата создания события
+     */
     @Column(name = "created_on", nullable = false)
     private LocalDateTime createdOn;
 
+    /**
+     * Полное описание события
+     */
     @Column(name = "description",nullable = false)
     private String description;
 
+    /**
+     * Дата и время на которые намечено событие. Дата и время указываются в формате "yyyy-MM-dd HH:mm:ss"
+     */
     @Column(name = "event_date", nullable = false)
     private LocalDateTime eventDate;
 
+    /**
+     *Пользователь, создавший событие
+     */
     @ManyToOne
     @JoinColumn(name = "initiator_id", nullable = false)
     @ToString.Exclude
     private User initiator;
 
+    /**
+     * Место проведения мероприятия
+     */
     @OneToOne(cascade = CascadeType.ALL)
     private Location location;
 
+    /**
+     * Нужно ли оплачивать участие
+     */
     @Column(nullable = false)
     private Boolean paid;
 
+    /**
+     * Ограничение на количество участников. Значение 0 - означает отсутствие ограничения
+     */
     @Column(name = "participant_limit", nullable = false)
     private Integer participantLimit;
 
-    @Column(name = "published_on", nullable = false)
+    /**
+     * Дата и время публикации события (в формате "yyyy-MM-dd HH:mm:ss")
+     */
+    @Column(name = "published_on")
     private LocalDateTime publishedOn;
 
     @Column(name = "request_moderation")
     private Boolean requestModeration;
 
+    /**
+     * Список состояний жизненного цикла события
+     */
     @Enumerated(value = EnumType.STRING)
     @Column(nullable = false)
     private EventState state;
 
+    /**
+     * Заголовок
+     */
     @Column(nullable = false)
     private String title;
 
+    /**
+     * Количество просмотрев события
+     */
     private Long views;
 
     @Override
