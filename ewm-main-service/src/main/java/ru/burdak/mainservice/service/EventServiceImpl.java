@@ -235,11 +235,6 @@ public class EventServiceImpl implements EventService {
             .equals(RequestStatus.REJECTED)) {
             return rejectRequests(requests);
         }
-
-        //todo: прописать данную проверку при POST users/{userId}/requests в privateRequestController if (event
-        // .getParticipantLimit() == 0 || !event.getRequestModeration()) {}
-        //
-
         return confirmedRequests(eventId, event, requests);
     }
 

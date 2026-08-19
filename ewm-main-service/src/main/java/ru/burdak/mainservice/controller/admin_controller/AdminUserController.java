@@ -4,7 +4,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
-import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -25,6 +24,14 @@ import java.util.List;
 public class AdminUserController {
     private final UserService userService;
 
+    @DeleteMapping("/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUser(HttpServletRequest request, @PathVariable("userId") @Positive Long id) {
+        log.info("{} {}?{}", request.getMethod(), request.getRequestURI(), request.getQueryString());
+        log.info("Deleting user with id: {}", id);
+        userService.deleteUser(request, id);
+    }
+
     @GetMapping
     @ResponseStatus(code = HttpStatus.OK)
     public List<UserDto> getUsers(HttpServletRequest request,
@@ -41,19 +48,9 @@ public class AdminUserController {
 
     @PostMapping
     @ResponseStatus(code = HttpStatus.CREATED)
-    public UserDto postNewUser(HttpServletRequest request,
-                               @RequestBody @Valid NewUserRequest newUserRequest) {
+    public UserDto postNewUser(HttpServletRequest request, @RequestBody @Valid NewUserRequest newUserRequest) {
         log.info("{} {}?{}", request.getMethod(), request.getRequestURI(), request.getQueryString());
         log.info("New user request: {}", newUserRequest);
         return userService.postNewUser(request, newUserRequest);
-    }
-
-    @DeleteMapping("/{userId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteUser(HttpServletRequest request,
-                           @PathVariable("userId") @Positive Long id) {
-        log.info("{} {}?{}", request.getMethod(), request.getRequestURI(), request.getQueryString());
-        log.info("Deleting user with id: {}", id);
-        userService.deleteUser(request, id);
     }
 }

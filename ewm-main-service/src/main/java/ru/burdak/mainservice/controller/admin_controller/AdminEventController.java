@@ -1,7 +1,6 @@
 package ru.burdak.mainservice.controller.admin_controller;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -26,13 +25,16 @@ public class AdminEventController {
 
     @GetMapping
     public ResponseEntity<List<EventFullDto>> getEventsByAdmin(HttpServletRequest request,
-                                               @RequestParam(name = "users") List<Long> users,
-                                               @RequestParam(name = "states") List<EventState> states,
-                                               @RequestParam(name = "categories") List<Long> categories,
-                                               @RequestParam(name = "rangeStart") LocalDateTime rangeStart,
-                                               @RequestParam(name = "rangeEnd") LocalDateTime rangeEnd,
-                                               @RequestParam(name = "from", defaultValue = "0") Integer from,
-                                               @RequestParam(name = "size", defaultValue = "10") Integer size) {
+                                                               @RequestParam(name = "users") List<Long> users,
+                                                               @RequestParam(name = "states") List<EventState> states,
+                                                               @RequestParam(name = "categories") List<Long> categories,
+                                                               @RequestParam(name = "rangeStart")
+                                                               LocalDateTime rangeStart,
+                                                               @RequestParam(name = "rangeEnd") LocalDateTime rangeEnd,
+                                                               @RequestParam(name = "from", defaultValue = "0")
+                                                               Integer from,
+                                                               @RequestParam(name = "size", defaultValue = "10")
+                                                               Integer size) {
         log.info("{} {}?{}", request.getMethod(), request.getRequestURI(), request.getQueryString());
         log.info(
             "AdminEventController.getEventsByAdmin called with parameters: users={}, states={}, categories={}, " +

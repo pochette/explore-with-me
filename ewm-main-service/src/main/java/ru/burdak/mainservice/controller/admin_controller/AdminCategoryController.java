@@ -21,21 +21,18 @@ import ru.burdak.mainservice.service.CategoryService;
 public class AdminCategoryController {
     private final CategoryService categoryService;
 
-    @PostMapping
-    public ResponseEntity<CategoryDto> postNewCategory(HttpServletRequest request,
-                                                       @RequestBody @Valid NewCategoryDto newCategoryDto) {
+    @DeleteMapping("/{catId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCategory(HttpServletRequest request,
+                               @PathVariable(name = "catId") @Positive Long catId) {
         log.info("{} {}?{}", request.getMethod(), request.getRequestURI(), request.getQueryString());
-        log.info("Получен запрос на добавление новой категории: {}", newCategoryDto);
-
-        return new ResponseEntity<>(
-            categoryService.postNewCategory(request, newCategoryDto),
-            HttpStatus.CREATED);
+        log.info("Получен запрос на удаление категории {} ", catId);
+        categoryService.deleteCategory(request, catId);
     }
 
     @PatchMapping("/{catId}")
     public ResponseEntity<CategoryDto> patchCategoryDto(HttpServletRequest request,
-                                                        @PathVariable(name = "catId", required = true) @Positive
-                                                        Long catId,
+                                                        @PathVariable(name = "catId") @Positive Long catId,
                                                         @RequestBody @Valid CategoryDto categoryDto) {
         log.info("{} {}?{}", request.getMethod(), request.getRequestURI(), request.getQueryString());
         log.info("Получен запрос на изменение категории с id {}", catId);
@@ -46,13 +43,14 @@ public class AdminCategoryController {
 
     }
 
-
-    @DeleteMapping("/{catId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCategory(HttpServletRequest request,
-                               @PathVariable(name = "catId", required = true) @Positive Long catId) {
+    @PostMapping
+    public ResponseEntity<CategoryDto> postNewCategory(HttpServletRequest request,
+                                                       @RequestBody @Valid NewCategoryDto newCategoryDto) {
         log.info("{} {}?{}", request.getMethod(), request.getRequestURI(), request.getQueryString());
-        log.info("Получен запрос на удаление категории {} ", catId);
-        categoryService.deleteCategory(request, catId);
+        log.info("Получен запрос на добавление новой категории: {}", newCategoryDto);
+
+        return new ResponseEntity<>(
+            categoryService.postNewCategory(request, newCategoryDto),
+            HttpStatus.CREATED);
     }
 }
