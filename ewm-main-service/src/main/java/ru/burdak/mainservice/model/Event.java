@@ -1,12 +1,16 @@
 package ru.burdak.mainservice.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+/**
+ * The type Event.
+ */
 @Entity
 @Table(name = "events")
 @Getter
@@ -15,6 +19,7 @@ import java.util.Objects;
 @AllArgsConstructor
 public class Event {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,7 +27,7 @@ public class Event {
     /**
      * Краткое описание события
      */
-    @Column(name = "annotation", nullable = false)
+    @Column(name = "annotation", nullable = false, length = 2000)
     private String annotation;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -45,8 +50,9 @@ public class Event {
     /**
      * Полное описание события
      */
-    @Column(name = "description", nullable = false)
+    @Column(name = "description", nullable = false, length = 7000)
     private String description;
+
 
     /**
      * Дата и время на которые намечено событие. Дата и время указываются в формате "yyyy-MM-dd HH:mm:ss"
@@ -99,7 +105,7 @@ public class Event {
     /**
      * Заголовок
      */
-    @Column(nullable = false)
+    @Column(nullable = false, length = 120)
     private String title;
 
     /**

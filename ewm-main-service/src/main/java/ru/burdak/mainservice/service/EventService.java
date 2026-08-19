@@ -7,12 +7,17 @@ import ru.burdak.mainservice.dto.event.*;
 import ru.burdak.mainservice.dto.request.EventRequestStatusUpdateRequest;
 import ru.burdak.mainservice.dto.request.EventRequestStatusUpdateResult;
 import ru.burdak.mainservice.dto.request.ParticipationRequestDto;
+import ru.burdak.mainservice.model.EventState;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface EventService {
 
     EventFullDto getEventByUserIdAndEventId(HttpServletRequest request, Long userId, Long eventId);
+
+    List<EventFullDto> getEventsByAdmin(List<Long> users, List<EventState> states, List<Long> categories,
+                                        LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from, Integer size);
 
     List<EventShortDto> getEventsByUserId(HttpServletRequest request, Long userId, Integer from, Integer size);
 
@@ -25,6 +30,8 @@ public interface EventService {
     List<ParticipationRequestDto> getParticipationRequestDtoList(Long userId, Long eventId);
 
     EventFullDto patchEvent(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest);
+
+    EventFullDto patchEventAndStatusAdmin(Long eventId, UpdateEventAdminRequest updateRequest);
 
     EventRequestStatusUpdateResult patchStatusOfRequestByUser(Long userid, Long eventId, EventRequestStatusUpdateRequest requestDto);
 

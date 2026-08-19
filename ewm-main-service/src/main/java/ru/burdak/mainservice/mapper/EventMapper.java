@@ -59,6 +59,7 @@ public class EventMapper {
     public Event toEntity(NewEventDto dto) {
         Event event = new Event();
         event.setCategory(null);
+        event.setEventDate(dto.eventDate());
         event.setConfirmedRequests(0);
         event.setCreatedOn(LocalDateTime.now());
         event.setAnnotation(dto.annotation());
