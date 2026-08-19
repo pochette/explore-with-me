@@ -45,7 +45,7 @@ public class Event {
     /**
      * Полное описание события
      */
-    @Column(name = "description",nullable = false)
+    @Column(name = "description", nullable = false)
     private String description;
 
     /**
@@ -55,7 +55,7 @@ public class Event {
     private LocalDateTime eventDate;
 
     /**
-     *Пользователь, создавший событие
+     * Пользователь, создавший событие
      */
     @ManyToOne
     @JoinColumn(name = "initiator_id", nullable = false)
@@ -128,5 +128,25 @@ public class Event {
         if (thisEffectiveClass != oEffectiveClass) return false;
         Event event = (Event) o;
         return getId() != null && Objects.equals(getId(), event.getId());
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "(" +
+            "id = " + id + ", " +
+            "annotation = " + annotation + ", " +
+            "confirmedRequests = " + confirmedRequests + ", " +
+            "createdOn = " + createdOn + ", " +
+            "description = " + description + ", " +
+            "eventDate = " + eventDate + ", " +
+            "initiator = " + initiator + ", " +
+            "location = " + location + ", " +
+            "paid = " + paid + ", " +
+            "participantLimit = " + participantLimit + ", " +
+            "publishedOn = " + publishedOn + ", " +
+            "requestModeration = " + requestModeration + ", " +
+            "state = " + state + ", " +
+            "title = " + title + ", " +
+            "views = " + views + ")";
     }
 }

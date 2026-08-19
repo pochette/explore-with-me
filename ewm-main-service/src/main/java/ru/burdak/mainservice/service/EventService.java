@@ -3,10 +3,10 @@ package ru.burdak.mainservice.service;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
-import ru.burdak.mainservice.dto.event.EventFullDto;
-import ru.burdak.mainservice.dto.event.EventShortDto;
-import ru.burdak.mainservice.dto.event.NewEventDto;
-import ru.burdak.mainservice.dto.event.UpdateEventUserRequest;
+import ru.burdak.mainservice.dto.event.*;
+import ru.burdak.mainservice.dto.request.EventRequestStatusUpdateRequest;
+import ru.burdak.mainservice.dto.request.EventRequestStatusUpdateResult;
+import ru.burdak.mainservice.dto.request.ParticipationRequestDto;
 
 import java.util.List;
 
@@ -16,7 +16,17 @@ public interface EventService {
 
     List<EventShortDto> getEventsByUserId(HttpServletRequest request, Long userId, Integer from, Integer size);
 
+    /**
+     * Получение информации о запросах на участие в событии текущего пользователя
+     * @param userId
+     * @param eventId
+     * @return ParticipationRequestDto
+     */
+    List<ParticipationRequestDto> getParticipationRequestDtoList(Long userId, Long eventId);
+
     EventFullDto patchEvent(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest);
+
+    EventRequestStatusUpdateResult patchStatusOfRequestByUser(Long userid, Long eventId, EventRequestStatusUpdateRequest requestDto);
 
     EventFullDto postNewEvent(HttpServletRequest request, Long userId, NewEventDto newEventDto);
 }

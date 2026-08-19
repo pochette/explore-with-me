@@ -1,7 +1,6 @@
 package ru.burdak.mainservice.mapper;
 
 import ru.burdak.mainservice.dto.user.NewUserRequest;
-import ru.burdak.mainservice.dto.event.ParticipationRequestDto;
 import ru.burdak.mainservice.dto.user.UserDto;
 import ru.burdak.mainservice.dto.user.UserShortDto;
 import ru.burdak.mainservice.model.User;
