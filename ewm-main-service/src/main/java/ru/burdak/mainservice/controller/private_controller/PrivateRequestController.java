@@ -49,6 +49,7 @@ public class PrivateRequestController {
                                                                                       @RequestParam(name = "eventId")
                                                                                       @Positive Long evenId) {
         log.info("{} {}?{}", request.getMethod(), request.getRequestURI(), request.getQueryString());
-        return new ResponseEntity<>(requestService.postRequestByUserPrivateController(userId, evenId), HttpStatus.OK);
+        return new ResponseEntity<>(requestService.postRequestByUserPrivateController(userId, evenId),
+            HttpStatus.CREATED);
     }
 }

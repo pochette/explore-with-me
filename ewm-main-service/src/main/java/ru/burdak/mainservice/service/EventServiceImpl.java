@@ -23,13 +23,15 @@ import ru.burdak.mainservice.repository.*;
 import ru.burdak.mainservice.util.EventSpecification;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+/**
+ * The type Event service.
+ */
 @Service
 @Slf4j
 @Transactional
@@ -42,12 +44,12 @@ public class EventServiceImpl implements EventService {
     private final RequestRepository requestRepository;
 
     @Override
-    public EventShortDto getEventByIdPublic(HttpServletRequest httpRequest, Long id) {
+    public EventFullDto getEventByIdPublic(HttpServletRequest httpRequest, Long id) {
         Event event = eventRepository.findByIdAndStateEquals(id, EventState.PUBLISHED)
             .orElseThrow(() -> new NotFoundException("Event with id= " + id + " was not found"));
         log.info("Found event with id= {}", id);
         //TODO добавить сохранение статистики просмотров
-        return EventMapper.toShortDto(event);
+        return EventMapper.toFullDto(event);
     }
 
     @Override
@@ -77,9 +79,11 @@ public class EventServiceImpl implements EventService {
             .and(EventSpecification.hasCategories(categories))
             .and(EventSpecification.hasEventDateAfterOrEqual(rangeStart))
             .and(EventSpecification.hasEventDateBeforeOreEqual(rangeEnd));
-        Set<Event> events = eventRepository.findAll(spec, pageable).stream().collect(Collectors.toSet());
-        log.info("Found {} events with filters: users={}, states={}, categories={}, rangeStart={}, rangeEnd={}",
-            events.size(), users, states, categories, rangeStart, rangeEnd);
+        List<Event> events = eventRepository.findAll(spec, pageable).stream().toList();
+        log.info(
+            "Found {} events with filters: users={}, states={}, categories={}, rangeStart={}, rangeEnd={}, from={}, " +
+                "size={}",
+            events.size(), users, states, categories, rangeStart, rangeEnd, from, size);
 
         return events.stream()
             .map(EventMapper::toFullDto)
@@ -87,10 +91,10 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Collection<EventShortDto> getEventsByFilterPublic(String text, Set<Long> categoriesIds, Boolean paid,
-                                                             LocalDateTime rangeStart, LocalDateTime rangeEnd,
-                                                             Boolean onlyAvailable, EventSortAvailable sortAvailable,
-                                                             Integer from, Integer size) {
+    public List<EventShortDto> getEventsByFilterPublic(String text, Set<Long> categoriesIds, Boolean paid,
+                                                       LocalDateTime rangeStart, LocalDateTime rangeEnd,
+                                                       Boolean onlyAvailable, EventSortAvailable sortAvailable,
+                                                       Integer from, Integer size) {
         Pageable pageable = PageRequest.of(
             from / size,
             size,
@@ -103,7 +107,7 @@ public class EventServiceImpl implements EventService {
             .and(EventSpecification.hasPaid(paid))
             .and(EventSpecification.hasOnlyAvailable(onlyAvailable));
 
-        Set<Event> events = eventRepository.findAll(spec, pageable).stream().collect(Collectors.toSet());
+        List<Event> events = eventRepository.findAll(spec, pageable).stream().toList();
         log.info(
             "Found {} events with filters: text={}, categories={}, paid={}, rangeStart={}, rangeEnd={}, " +
                 "onlyAvailable={}, sortAvailable={}",
@@ -111,8 +115,7 @@ public class EventServiceImpl implements EventService {
         //TODO добавить сохранение статистики просмотров
         return events.stream()
             .map(EventMapper::toShortDto)
-            .collect(Collectors.toSet());
-
+            .toList();
     }
 
     @Override
@@ -233,13 +236,13 @@ public class EventServiceImpl implements EventService {
         if (updateRequest.stateAction() == StateAction.REJECT_EVENT) {
             event.setState(EventState.CANCELED);
         }
-        updateIfPresent(updateRequest.stateAction(),
-            status -> event.setState(EventState.valueOf(status.name())));
+
         updateIfPresent(updateRequest.title(), event::setTitle);
 
         log.info("Event with id= {} updated by admin. Updated event: {}", eventId, event);
 
-        return EventMapper.toFullDto(event);
+        Event savedEvent = eventRepository.save(event);
+        return EventMapper.toFullDto(savedEvent);
     }
 
     @Override
@@ -283,7 +286,7 @@ public class EventServiceImpl implements EventService {
             request.setStatus(RequestStatus.REJECTED);
             rejectedRequests.add(RequestMapper.toDto(request));
         }
-        log.info("Rejected requests: {}", rejectedRequests);
+        log.info("Rejected requests: {}" , rejectedRequests);
         log.info("Confirmed requests: {}", confirmedRequests);
         return new EventRequestStatusUpdateResult(confirmedRequests, rejectedRequests);
     }

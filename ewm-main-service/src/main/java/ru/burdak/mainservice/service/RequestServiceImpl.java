@@ -20,6 +20,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * The type Request service.
+ */
 @Service
 @Slf4j
 @Transactional
@@ -48,7 +51,10 @@ public class RequestServiceImpl implements RequestService {
         Request request = requestRepository.findByRequester_IdAndId(userId, requestId).orElseThrow(
             () -> new NotFoundException(
                 "Request with id=" + requestId + " and requester_id=)" + userId + " were not " + "found"));
-        return RequestMapper.toDto(request);
+
+        request.setStatus(RequestStatus.CANCELED);
+        Request savedRequest = requestRepository.save(request);
+        return RequestMapper.toDto(savedRequest);
     }
 
     @Override
@@ -60,7 +66,7 @@ public class RequestServiceImpl implements RequestService {
                 "User with id= " + userId + " is already invited to the event with id=" + eventId);
         }
         Event event = eventRepository.findById(eventId)
-            .orElseThrow(() -> new NotFoundException("Event with id=" + +eventId + " was not found"));
+            .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new NotFoundException("User with id=" + userId + "was not found"));
 

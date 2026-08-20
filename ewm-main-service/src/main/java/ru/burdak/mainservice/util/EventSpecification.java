@@ -11,7 +11,7 @@ import java.util.Collection;
 @UtilityClass
 public class EventSpecification {
     public Specification<Event> hasCategories(Collection<Long> categoryIds) {
-        if (categoryIds.isEmpty()) {
+        if (categoryIds == null || categoryIds.isEmpty()) {
             return null;
         }
         return ((root, query, criteriaBuilder) -> root
@@ -21,7 +21,7 @@ public class EventSpecification {
     }
 
     public Specification<Event> hasInitiators(Collection<Long> userIds) {
-        if (userIds.isEmpty()) {
+        if (userIds == null || userIds.isEmpty()) {
             return null;
         }
         return ((root, query, cb) -> root
@@ -49,8 +49,8 @@ public class EventSpecification {
 
     /**
      *
-     * @param rangeStart
-     * @param rangeEnd
+     * @param rangeStart LocalDateTime - начальная дата диапазона, может быть null
+     * @param rangeEnd LocalDateTime - конечная дата диапазона, может быть null
      * @return Возвращает Specification для фильтрации событий по диапазону дат. Если оба параметра null, возвращает
      * Specification для событий с датой после текущего времени.
      */
@@ -61,11 +61,9 @@ public class EventSpecification {
                 LocalDateTime.now()));
         }
         Specification<Event> spec = Specification.where(null);
+        return spec.and(hasEventDateAfterOrEqual(rangeStart))
+            .and(hasEventDateBeforeOreEqual(rangeEnd));
 
-        hasEventDateAfterOrEqual(rangeStart);
-        hasEventDateBeforeOreEqual(rangeEnd);
-
-        return spec;
     }
 
     public Specification<Event> hasEventDateAfterOrEqual(LocalDateTime rangeStart) {
@@ -78,7 +76,7 @@ public class EventSpecification {
 
     /**
      *
-     * @param rangeEnd
+     * @param rangeEnd LocalDateTime - конечная дата диапазона, может быть null
      * @return Возвращает Specification для фильтрации событий по дате события, которая должна быть меньше или равна
      * указанной дате rangeEnd. Если rangeEnd равен null, возвращает null.
      */
@@ -90,7 +88,7 @@ public class EventSpecification {
     }
 
     public Specification<Event> hasStates(Collection<EventState> states) {
-        if (states.isEmpty()) {
+        if (states == null || states.isEmpty()) {
             return null;
         }
         return (((root, query, criteriaBuilder) -> root
@@ -105,10 +103,6 @@ public class EventSpecification {
         return ((root, query, criteriaBuilder) -> criteriaBuilder.or(
             criteriaBuilder.like(criteriaBuilder.lower(root.get("annotation")), "%" + text.toLowerCase() + "%"),
             criteriaBuilder.like(criteriaBuilder.lower(root.get("description")), "%" + text.toLowerCase() + "%")));
-    }
-
-    public Specification<Event> isPublished() {
-        return ((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("state"), EventState.PUBLISHED));
     }
 
 }

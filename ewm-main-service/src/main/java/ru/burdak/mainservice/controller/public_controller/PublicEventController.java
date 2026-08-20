@@ -7,20 +7,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import ru.burdak.mainservice.dto.event.EventFullDto;
 import ru.burdak.mainservice.dto.event.EventShortDto;
 import ru.burdak.mainservice.model.EventSortAvailable;
 import ru.burdak.mainservice.service.EventService;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import static ru.burdak.mainservice.util.FormatterDateTime.DATE_TIME_PATTERN;
 
+/**
+ * The type Public event controller.
+ */
 @RestController
 @RequestMapping("/events")
 @Slf4j
@@ -29,11 +30,45 @@ import static ru.burdak.mainservice.util.FormatterDateTime.DATE_TIME_PATTERN;
 public class PublicEventController {
     private final EventService eventService;
 
+    /**ё
+     * Gets event by id public controller.
+     *
+     * @param httpRequest the http request
+     * @param id          the id
+     * @return the event by id public controller
+     */
+//todo Настроить сохранение статистики
+    @GetMapping("/{id}")
+    public ResponseEntity<EventFullDto> getEventByIdPublicController(
+        HttpServletRequest httpRequest,
+        @PathVariable(name = "id") @Positive Long id
+    ) {
+        log.info("{} {}?{}", httpRequest.getMethod(), httpRequest.getRequestURI(), httpRequest.getQueryString());
+        EventFullDto event = eventService.getEventByIdPublic(httpRequest, id);
+        return ResponseEntity.ok(event);
+    }
+
+    /**
+     * Gets events by filter public controller.
+     *
+     * @param httpRequest   the http request
+     * @param text          the text
+     * @param categoriesIds the categories ids
+     * @param paid          the paid
+     * @param rangeStart    the range start
+     * @param rangeEnd      the range end
+     * @param onlyAvailable the only available
+     * @param sortAvailable the sort available
+     * @param from          the from параметр для постраничного вывода, начиная с какого элемента (0 - означает вывод с первого элемента)
+     * @param size          the size параметр для постраничного вывода, количество элементов для отображения
+     * @return the events by filter public controller
+     */
+//todo Настроить сохранение статистики
     @GetMapping
-    public ResponseEntity<Collection<EventShortDto>> getEventsByFilterPublicController(
+    public ResponseEntity<List<EventShortDto>> getEventsByFilterPublicController(
         HttpServletRequest httpRequest,
         @RequestParam(required = false, name = "text") String text,
-        @RequestParam(required = false, name = "categories") Set<Long> categoriesIds,
+        @RequestParam(required = false, name = "categories") Set<@Positive Long> categoriesIds,
         @RequestParam(required = false, name = "paid") Boolean paid,
         @RequestParam(required = false, name = "rangeStart")
         @DateTimeFormat(pattern = DATE_TIME_PATTERN)
@@ -47,21 +82,13 @@ public class PublicEventController {
         @RequestParam(required = false, name = "size", defaultValue = "10") Integer size
     ) {
         log.info("{} {}?{}", httpRequest.getMethod(), httpRequest.getRequestURI(), httpRequest.getQueryString());
-        log.info("Parameters: text={}, categoriesIds={}, paid={}, rangeStart={}, rangeEnd={}, onlyAvailable={}, sortAvailable={}, from={}, size={}",
+        log.info(
+            "Parameters: text={}, categoriesIds={}, paid={}, rangeStart={}, rangeEnd={}, onlyAvailable={}, " +
+                "sortAvailable={}, from={}, size={}",
             text, categoriesIds, paid, rangeStart, rangeEnd, onlyAvailable, sortAvailable, from, size);
-        Collection<EventShortDto> events = eventService.getEventsByFilterPublic(
+        List<EventShortDto> events = eventService.getEventsByFilterPublic(
             text, categoriesIds, paid, rangeStart, rangeEnd, onlyAvailable, sortAvailable, from, size);
         return ResponseEntity.ok(events);
 
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<EventShortDto> getEventByIdPublicController(
-        HttpServletRequest httpRequest,
-        @RequestParam(name = "id") @Positive Long id
-    ) {
-        log.info("{} {}?{}", httpRequest.getMethod(), httpRequest.getRequestURI(), httpRequest.getQueryString());
-        EventShortDto event = eventService.getEventByIdPublic(httpRequest, id);
-        return ResponseEntity.ok(event);
     }
 }

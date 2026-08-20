@@ -77,7 +77,7 @@ public class PrivateEventController {
         );
     }
 
-    @PatchMapping("/{eventId}/request")
+    @PatchMapping("/{eventId}/requests")
     public ResponseEntity<EventRequestStatusUpdateResult> patchStatusOfRequestByUser(
         HttpServletRequest request,
         @PathVariable(name = "userId") @Positive Long userid,
