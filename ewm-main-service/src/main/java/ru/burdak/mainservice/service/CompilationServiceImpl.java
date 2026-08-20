@@ -3,6 +3,8 @@ package ru.burdak.mainservice.service;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.burdak.mainservice.dto.compilation.CompilationDto;
@@ -16,6 +18,7 @@ import ru.burdak.mainservice.repository.CompilationRepository;
 import ru.burdak.mainservice.repository.EventRepository;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -34,6 +37,33 @@ public class CompilationServiceImpl implements CompilationService {
             () -> new NotFoundException("Compilation with id=" + compId + " was not found")
         );
         compilationRepository.delete(compilation);
+    }
+
+    @Override
+    public CompilationDto getCompilationByIdPublic(HttpServletRequest httpRequest, Long compId) {
+        Compilation compilation = compilationRepository.findById(compId).orElseThrow(
+            () -> new NotFoundException("Compilation with id=" + compId + " was not found")
+        );
+
+        return CompilationMapper.toDto(compilation);
+    }
+
+    @Override
+    public List<CompilationDto> getCompilationsPublic(HttpServletRequest httpRequest, Boolean pinned, Integer from,
+                                                      Integer size) {
+        Pageable pageable = PageRequest.of(from / size,
+            size);
+        if (pinned != null) {
+            return compilationRepository.findAllByPinned(pinned, pageable)
+                .stream()
+                .map(CompilationMapper::toDto)
+                .toList();
+        } else {
+            return compilationRepository.findAll(pageable)
+                .stream()
+                .map(CompilationMapper::toDto)
+                .toList();
+        }
     }
 
     @Override

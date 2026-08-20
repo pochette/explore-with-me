@@ -3,6 +3,7 @@ package ru.burdak.mainservice.controller.admin_controller;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -14,6 +15,8 @@ import ru.burdak.mainservice.service.EventService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+import static ru.burdak.mainservice.util.FormatterDateTime.DATE_TIME_PATTERN;
 
 @RestController
 @RequestMapping("/admin/events")
@@ -28,9 +31,12 @@ public class AdminEventController {
                                                                @RequestParam(name = "users") List<Long> users,
                                                                @RequestParam(name = "states") List<EventState> states,
                                                                @RequestParam(name = "categories") List<Long> categories,
-                                                               @RequestParam(name = "rangeStart")
+                                                               @RequestParam(required = false, name = "rangeStart")
+                                                               @DateTimeFormat(pattern = DATE_TIME_PATTERN)
                                                                LocalDateTime rangeStart,
-                                                               @RequestParam(name = "rangeEnd") LocalDateTime rangeEnd,
+                                                               @RequestParam(required = false, name = "rangeEnd")
+                                                               @DateTimeFormat(pattern = DATE_TIME_PATTERN)
+                                                               LocalDateTime rangeEnd,
                                                                @RequestParam(name = "from", defaultValue = "0")
                                                                Integer from,
                                                                @RequestParam(name = "size", defaultValue = "10")

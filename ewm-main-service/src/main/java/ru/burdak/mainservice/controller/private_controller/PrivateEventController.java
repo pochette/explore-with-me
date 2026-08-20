@@ -17,6 +17,7 @@ import ru.burdak.mainservice.dto.request.ParticipationRequestDto;
 import ru.burdak.mainservice.service.EventService;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping(path = "/users/{userId}/events")
@@ -39,7 +40,7 @@ public class PrivateEventController {
     }
 
     @GetMapping()
-    public ResponseEntity<List<EventShortDto>> getEventsByUserId(
+    public ResponseEntity<Set<EventShortDto>> getEventsByUserId(
         HttpServletRequest request,
         @PathVariable(name = "userId") @Positive Long userId,
         @RequestParam(name = "from", required = false, defaultValue = "0") @PositiveOrZero Integer from,

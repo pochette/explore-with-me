@@ -1,7 +1,6 @@
 package ru.burdak.mainservice.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
@@ -18,7 +17,6 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Event {
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,7 +50,6 @@ public class Event {
      */
     @Column(name = "description", nullable = false, length = 7000)
     private String description;
-
 
     /**
      * Дата и время на которые намечено событие. Дата и время указываются в формате "yyyy-MM-dd HH:mm:ss"

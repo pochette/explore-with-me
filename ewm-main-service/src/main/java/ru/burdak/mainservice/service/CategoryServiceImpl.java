@@ -1,9 +1,11 @@
 package ru.burdak.mainservice.service;
 
-import jakarta.persistence.Table;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.burdak.mainservice.dto.category.CategoryDto;
@@ -14,6 +16,10 @@ import ru.burdak.mainservice.mapper.CategoryMapper;
 import ru.burdak.mainservice.model.Category;
 import ru.burdak.mainservice.repository.CategoryRepository;
 import ru.burdak.mainservice.repository.EventRepository;
+
+import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,11 +37,25 @@ public class CategoryServiceImpl implements CategoryService {
         if (eventRepository.existsByCategory_Id(catId)) {
             throw new ConflictException("The category is not empty");
         }
-
         categoryRepository.deleteById(catId);
+    }
 
+    @Transactional(readOnly = true)
+    @Override
+    public Collection<CategoryDto> getCategoriesPublic(HttpServletRequest httpRequest, Integer from, Integer size) {
+        Pageable pageable = PageRequest.of(from / size, size, Sort.Direction.ASC, "id");
+        Set<Category> result = categoryRepository.findAll(pageable).toSet();
+        return result.stream().map(CategoryMapper::toDto).collect(Collectors.toSet());
+    }
 
+    @Transactional(readOnly = true)
+    @Override
+    public CategoryDto getCategoryByIdPublic(HttpServletRequest httpRequest, Long catId) {
+        Category category = categoryRepository.findById(catId).orElseThrow(
+            () -> new NotFoundException("Category with id=" + catId + " was not found")
+        );
 
+        return CategoryMapper.toDto(category);
     }
 
     @Transactional
@@ -50,7 +70,7 @@ public class CategoryServiceImpl implements CategoryService {
 
         categoryForUpdate.setName(categoryDto.name());
 
-        log.info("Изменена категория : {} " , categoryForUpdate);
+        log.info("Изменена категория : {} ", categoryForUpdate);
         return CategoryMapper.toDto(categoryRepository.save(categoryForUpdate));
     }
 

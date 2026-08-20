@@ -23,10 +23,12 @@ import ru.burdak.mainservice.repository.*;
 import ru.burdak.mainservice.util.EventSpecification;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -40,6 +42,15 @@ public class EventServiceImpl implements EventService {
     private final RequestRepository requestRepository;
 
     @Override
+    public EventShortDto getEventByIdPublic(HttpServletRequest httpRequest, Long id) {
+        Event event = eventRepository.findByIdAndStateEquals(id, EventState.PUBLISHED)
+            .orElseThrow(() -> new NotFoundException("Event with id= " + id + " was not found"));
+        log.info("Found event with id= {}", id);
+        //TODO добавить сохранение статистики просмотров
+        return EventMapper.toShortDto(event);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public EventFullDto getEventByUserIdAndEventId(HttpServletRequest request, Long userId, Long eventId) {
         Event event = eventRepository
@@ -47,6 +58,7 @@ public class EventServiceImpl implements EventService {
             .orElseThrow(() ->
                 new NotFoundException(
                     "Event with id= " + eventId + " and initiator with id= " + userId + "was not " + "found"));
+        log.info("Found event with id= {} and initiator with id= {}", eventId, userId);
         return EventMapper.toFullDto(event);
     }
 
@@ -55,48 +67,67 @@ public class EventServiceImpl implements EventService {
     public List<EventFullDto> getEventsByAdmin(List<Long> users, List<EventState> states, List<Long> categories,
                                                LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from,
                                                Integer size) {
-        Pageable pageable = PageRequest.of(
-            from / size, size, Sort
-                .by("id")
-                .ascending());
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by("eventDate").ascending());
 
-        Specification<Event> spec = Specification.where(null);
+        Specification<Event> spec =
+            Specification.where(null);
 
-        if (users != null && !users.isEmpty()) {
-            spec = spec.and(EventSpecification.hasInitiators(users));
-        }
-        if (states != null && !states.isEmpty()) {
-            spec = spec.and(EventSpecification.hasStates(states));
-        }
-        if (categories != null && !categories.isEmpty()) {
-            spec = spec.and(EventSpecification.hasCategories(categories));
-        }
-        if (rangeStart != null) {
-            spec =
-                spec.and(EventSpecification.eventDateAfterOrEqual(rangeStart));
-        }
-        if (rangeEnd != null) {
-            spec = spec.and(EventSpecification.eventDateBeforeOreEqual(rangeEnd));
-        }
-        return eventRepository
-            .findAll(spec, pageable)
-            .stream()
+        spec = spec.and(EventSpecification.hasInitiators(users))
+            .and(EventSpecification.hasStates(states))
+            .and(EventSpecification.hasCategories(categories))
+            .and(EventSpecification.hasEventDateAfterOrEqual(rangeStart))
+            .and(EventSpecification.hasEventDateBeforeOreEqual(rangeEnd));
+        Set<Event> events = eventRepository.findAll(spec, pageable).stream().collect(Collectors.toSet());
+        log.info("Found {} events with filters: users={}, states={}, categories={}, rangeStart={}, rangeEnd={}",
+            events.size(), users, states, categories, rangeStart, rangeEnd);
+
+        return events.stream()
             .map(EventMapper::toFullDto)
             .toList();
     }
 
     @Override
+    public Collection<EventShortDto> getEventsByFilterPublic(String text, Set<Long> categoriesIds, Boolean paid,
+                                                             LocalDateTime rangeStart, LocalDateTime rangeEnd,
+                                                             Boolean onlyAvailable, EventSortAvailable sortAvailable,
+                                                             Integer from, Integer size) {
+        Pageable pageable = PageRequest.of(
+            from / size,
+            size,
+            getPublicEventSort(sortAvailable));
+
+        Specification<Event> spec = Specification.where(EventSpecification.hasStates(List.of(EventState.PUBLISHED)))
+            .and(EventSpecification.hasRangeDate(rangeStart, rangeEnd))
+            .and(EventSpecification.hasText(text))
+            .and(EventSpecification.hasCategories(categoriesIds))
+            .and(EventSpecification.hasPaid(paid))
+            .and(EventSpecification.hasOnlyAvailable(onlyAvailable));
+
+        Set<Event> events = eventRepository.findAll(spec, pageable).stream().collect(Collectors.toSet());
+        log.info(
+            "Found {} events with filters: text={}, categories={}, paid={}, rangeStart={}, rangeEnd={}, " +
+                "onlyAvailable={}, sortAvailable={}",
+            events.size(), text, categoriesIds, paid, rangeStart, rangeEnd, onlyAvailable, sortAvailable);
+        //TODO добавить сохранение статистики просмотров
+        return events.stream()
+            .map(EventMapper::toShortDto)
+            .collect(Collectors.toSet());
+
+    }
+
+    @Override
     @Transactional(readOnly = true)
-    public List<EventShortDto> getEventsByUserId(HttpServletRequest request, Long userId, Integer from, Integer size) {
+    public Set<EventShortDto> getEventsByUserId(HttpServletRequest request, Long userId, Integer from, Integer size) {
         Pageable pageable = PageRequest.of(from / size, size, Sort
             .by("id")
             .ascending());
 
-        return eventRepository
-            .findAllByInitiator_Id(userId, pageable)
-            .stream()
+        Set<Event> events = new HashSet<>(eventRepository.findAllByInitiator_Id(userId, pageable));
+        log.info("Found {} events for user with id= {}", events.size(), userId);
+
+        return events.stream()
             .map(EventMapper::toShortDto)
-            .toList();
+            .collect(Collectors.toSet());
     }
 
     @Override
@@ -151,6 +182,8 @@ public class EventServiceImpl implements EventService {
         }
 
         EventMapper.updateFromUserRequest(event, dto);
+        log.info("Event with id= {} updated by user with id= {}", eventId, userId);
+        log.info("Updated event: {}", event);
         return EventMapper.toFullDto(event);
     }
 
@@ -204,6 +237,8 @@ public class EventServiceImpl implements EventService {
             status -> event.setState(EventState.valueOf(status.name())));
         updateIfPresent(updateRequest.title(), event::setTitle);
 
+        log.info("Event with id= {} updated by admin. Updated event: {}", eventId, event);
+
         return EventMapper.toFullDto(event);
     }
 
@@ -235,6 +270,8 @@ public class EventServiceImpl implements EventService {
             .equals(RequestStatus.REJECTED)) {
             return rejectRequests(requests);
         }
+        log.info("Confirming requests for event with id= {} by user with id= {}", eventId, userid);
+        log.info("Requests to confirm: {}", requests);
         return confirmedRequests(eventId, event, requests);
     }
 
@@ -246,6 +283,8 @@ public class EventServiceImpl implements EventService {
             request.setStatus(RequestStatus.REJECTED);
             rejectedRequests.add(RequestMapper.toDto(request));
         }
+        log.info("Rejected requests: {}", rejectedRequests);
+        log.info("Confirmed requests: {}", confirmedRequests);
         return new EventRequestStatusUpdateResult(confirmedRequests, rejectedRequests);
     }
 
@@ -279,6 +318,8 @@ public class EventServiceImpl implements EventService {
                 rejectedRequests.add(RequestMapper.toDto(request));
             }
         }
+        log.info("Rejected requests: {}", rejectedRequests);
+        log.info("Confirmed requests: {}", confirmedRequests);
         return new EventRequestStatusUpdateResult(confirmedRequests, rejectedRequests);
     }
 
@@ -298,7 +339,7 @@ public class EventServiceImpl implements EventService {
         event.setLocation(location);
         event.setInitiator(user);
         event.setCategory(category);
-
+        log.info("Creating new event: {}", event);
         return EventMapper.toFullDto(eventRepository.save(event));
     }
 
@@ -306,5 +347,14 @@ public class EventServiceImpl implements EventService {
         if (value != null) {
             setter.accept(value);
         }
+    }
+
+    private Sort getPublicEventSort(EventSortAvailable sortAvailable) {
+        if (sortAvailable == EventSortAvailable.VIEWS) {
+            return Sort.by("views").descending();
+        } else if (sortAvailable == EventSortAvailable.EVENT_DATE) {
+            return Sort.by("eventDate").ascending();
+        }
+        return Sort.by("id").ascending();
     }
 }
