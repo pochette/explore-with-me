@@ -1,6 +1,8 @@
 services:
   stats-server:
-    build: ./ewm-stat-service
+    build:
+      context: .
+      dockerfile: ewm-stat-service/Dockerfile
     ports:
       - "9090:9090"
       - "5006:5006"
@@ -20,7 +22,11 @@ services:
       POSTGRES_PASSWORD: postgres
 
   ewm-service:
-    build: ./ewm-main-service
+    build:
+      context: .
+      dockerfile: ewm-main-service/Dockerfile
+
+
     ports:
       - "8080:8080"
       - "5005:5005"
