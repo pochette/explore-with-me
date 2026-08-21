@@ -48,6 +48,7 @@
       "description": "API для работы с подборками событий",
       "name": "Admin: Подборки событий"
     }
+
   ],
   "paths": {
     "/admin/categories": {

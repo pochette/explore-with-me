@@ -1,0 +1,440 @@
+openapi: 3.0.1
+
+info:
+  title: Explore With Me API
+  version: 1.0.0
+
+tags:
+  - name: "Admin: Локации"
+    description: API для администрирования заранее заданных локаций
+
+  - name: "Public: События"
+    description: Публичные операции с событиями
+
+paths:
+  /admin/locations:
+    post:
+      tags:
+        - "Admin: Локации"
+      summary: Добавление новой локации
+      description: >
+        Добавляет новую локацию, которую можно использовать для поиска событий
+        в заданной области.
+      operationId: addLocation
+      requestBody:
+        description: Данные новой локации
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewAdminLocationDto"
+            example:
+              name: "Парк Горького"
+              lat: 55.7298
+              lon: 37.6019
+              radius: 3.5
+      responses:
+        "201":
+          description: Локация добавлена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminLocationDto"
+        "400":
+          description: Запрос составлен некорректно
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          description: Локация с таким названием уже существует
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+    get:
+      tags:
+        - "Admin: Локации"
+      summary: Получение списка локаций
+      operationId: getLocations
+      parameters:
+        - name: from
+          in: query
+          required: false
+          description: Количество элементов, которые нужно пропустить
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          required: false
+          description: Количество элементов в наборе
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 10
+      responses:
+        "200":
+          description: Локации найдены
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminLocationDto"
+        "400":
+          description: Запрос составлен некорректно
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /admin/locations/{locationId}:
+    get:
+      tags:
+        - "Admin: Локации"
+      summary: Получение локации по идентификатору
+      operationId: getLocationById
+      parameters:
+        - $ref: "#/components/parameters/LocationId"
+      responses:
+        "200":
+          description: Локация найдена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminLocationDto"
+        "404":
+          description: Локация не найдена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+    patch:
+      tags:
+        - "Admin: Локации"
+      summary: Обновление локации
+      description: Можно передать только поля, которые необходимо изменить.
+      operationId: updateLocation
+      parameters:
+        - $ref: "#/components/parameters/LocationId"
+      requestBody:
+        description: Новые данные локации
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAdminLocationDto"
+            example:
+              name: "Парк Горького"
+              radius: 5.0
+      responses:
+        "200":
+          description: Локация обновлена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminLocationDto"
+        "400":
+          description: Запрос составлен некорректно
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          description: Локация не найдена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          description: Нарушение целостности данных
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+    delete:
+      tags:
+        - "Admin: Локации"
+      summary: Удаление локации
+      operationId: deleteLocation
+      parameters:
+        - $ref: "#/components/parameters/LocationId"
+      responses:
+        "204":
+          description: Локация удалена
+        "404":
+          description: Локация не найдена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /locations/{locationId}/events:
+    get:
+      tags:
+        - "Public: События"
+      summary: Поиск событий рядом с локацией
+      description: >
+        Возвращает опубликованные события, находящиеся в пределах радиуса
+        выбранной локации.
+      operationId: getEventsByLocation
+      parameters:
+        - $ref: "#/components/parameters/LocationId"
+        - name: from
+          in: query
+          required: false
+          description: Количество элементов, которые нужно пропустить
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          required: false
+          description: Количество элементов в наборе
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 10
+      responses:
+        "200":
+          description: События найдены
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EventShortDto"
+        "400":
+          description: Запрос составлен некорректно
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          description: Локация не найдена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+components:
+  parameters:
+    LocationId:
+      name: locationId
+      in: path
+      required: true
+      description: Идентификатор локации
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+
+  schemas:
+    NewAdminLocationDto:
+      type: object
+      description: Данные для добавления новой локации
+      required:
+        - name
+        - lat
+        - lon
+        - radius
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Название локации
+          example: "Парк Горького"
+        lat:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+          description: Широта центра локации
+          example: 55.7298
+        lon:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+          description: Долгота центра локации
+          example: 37.6019
+        radius:
+          type: number
+          format: double
+          minimum: 0
+          exclusiveMinimum: true
+          description: Радиус поиска событий в километрах
+          example: 3.5
+
+    UpdateAdminLocationDto:
+      type: object
+      description: Данные для обновления локации
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: "Парк Горького"
+        lat:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+          example: 55.7298
+        lon:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+          example: 37.6019
+        radius:
+          type: number
+          format: double
+          minimum: 0
+          exclusiveMinimum: true
+          description: Радиус поиска событий в километрах
+          example: 5.0
+
+    AdminLocationDto:
+      type: object
+      description: Локация для поиска событий
+      required:
+        - id
+        - name
+        - lat
+        - lon
+        - radius
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "Парк Горького"
+        lat:
+          type: number
+          format: double
+          example: 55.7298
+        lon:
+          type: number
+          format: double
+          example: 37.6019
+        radius:
+          type: number
+          format: double
+          description: Радиус поиска событий в километрах
+          example: 3.5
+
+    EventShortDto:
+      type: object
+      description: Краткая информация о событии
+      required:
+        - annotation
+        - category
+        - eventDate
+        - initiator
+        - paid
+        - title
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        annotation:
+          type: string
+          minLength: 20
+          maxLength: 2000
+          example: "Эксклюзивность шоу гарантирует привлечение зрительской аудитории"
+        category:
+          $ref: "#/components/schemas/CategoryDto"
+        confirmedRequests:
+          type: integer
+          format: int64
+          example: 5
+        eventDate:
+          type: string
+          pattern: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$'
+          example: "2026-12-31 15:10:05"
+        initiator:
+          $ref: "#/components/schemas/UserShortDto"
+        paid:
+          type: boolean
+          example: true
+        title:
+          type: string
+          minLength: 3
+          maxLength: 120
+          example: "Знаменитое шоу 'Летающая кукуруза'"
+        views:
+          type: integer
+          format: int64
+          example: 999
+
+    CategoryDto:
+      type: object
+      required:
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: "Концерты"
+
+    UserShortDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 3
+        name:
+          type: string
+          example: "Фёдоров Матвей"
+
+    ApiError:
+      type: object
+      description: Сведения об ошибке
+      properties:
+        errors:
+          type: array
+          description: Список элементов стектрейса или описаний ошибок
+          items:
+            type: string
+          example: [ ]
+        message:
+          type: string
+          description: Сообщение об ошибке
+          example: "Only pending or canceled events can be changed"
+        reason:
+          type: string
+          description: Общее описание причины ошибки
+          example: "For the requested operation the conditions are not met."
+        status:
+          type: string
+          description: HTTP-статус в текстовом представлении
+          example: "CONFLICT"
+          enum:
+            - BAD_REQUEST
+            - NOT_FOUND
+            - CONFLICT
+            - INTERNAL_SERVER_ERROR
+        timestamp:
+          type: string
+          pattern: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$'
+          description: Дата и время возникновения ошибки
+          example: "2026-08-21 12:00:00"
