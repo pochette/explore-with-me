@@ -8,6 +8,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.burdak.ewmstatsclient.client.StatsClient;
 import ru.burdak.mainservice.dto.event.EventFullDto;
 import ru.burdak.mainservice.dto.event.EventShortDto;
 import ru.burdak.mainservice.model.EventSortAvailable;
@@ -29,15 +30,17 @@ import static ru.burdak.mainservice.util.FormatterDateTime.DATE_TIME_PATTERN;
 @RequiredArgsConstructor
 public class PublicEventController {
     private final EventService eventService;
+    private final StatsClient statsClient;
 
-    /**ё
+    /**
+     * ё
      * Gets event by id public controller.
      *
      * @param httpRequest the http request
      * @param id          the id
      * @return the event by id public controller
      */
-//todo Настроить сохранение статистики
+
     @GetMapping("/{id}")
     public ResponseEntity<EventFullDto> getEventByIdPublicController(
         HttpServletRequest httpRequest,
@@ -51,7 +54,7 @@ public class PublicEventController {
     /**
      * Gets events by filter public controller.
      *
-     * @param httpRequest   the http request
+     * @param request       the http request
      * @param text          the text
      * @param categoriesIds the categories ids
      * @param paid          the paid
@@ -59,14 +62,15 @@ public class PublicEventController {
      * @param rangeEnd      the range end
      * @param onlyAvailable the only available
      * @param sortAvailable the sort available
-     * @param from          the from параметр для постраничного вывода, начиная с какого элемента (0 - означает вывод с первого элемента)
+     * @param from          the from параметр для постраничного вывода, начиная с какого элемента (0 - означает вывод
+     *                      с первого элемента)
      * @param size          the size параметр для постраничного вывода, количество элементов для отображения
      * @return the events by filter public controller
      */
 //todo Настроить сохранение статистики
     @GetMapping
     public ResponseEntity<List<EventShortDto>> getEventsByFilterPublicController(
-        HttpServletRequest httpRequest,
+        HttpServletRequest request,
         @RequestParam(required = false, name = "text") String text,
         @RequestParam(required = false, name = "categories") Set<@Positive Long> categoriesIds,
         @RequestParam(required = false, name = "paid") Boolean paid,
@@ -81,13 +85,13 @@ public class PublicEventController {
         @RequestParam(required = false, name = "from", defaultValue = "0") Integer from,
         @RequestParam(required = false, name = "size", defaultValue = "10") Integer size
     ) {
-        log.info("{} {}?{}", httpRequest.getMethod(), httpRequest.getRequestURI(), httpRequest.getQueryString());
+        log.info("{} {}?{}", request.getMethod(), request.getRequestURI(), request.getQueryString());
         log.info(
             "Parameters: text={}, categoriesIds={}, paid={}, rangeStart={}, rangeEnd={}, onlyAvailable={}, " +
                 "sortAvailable={}, from={}, size={}",
             text, categoriesIds, paid, rangeStart, rangeEnd, onlyAvailable, sortAvailable, from, size);
         List<EventShortDto> events = eventService.getEventsByFilterPublic(
-            text, categoriesIds, paid, rangeStart, rangeEnd, onlyAvailable, sortAvailable, from, size);
+            text, categoriesIds, paid, rangeStart, rangeEnd, onlyAvailable, sortAvailable, from, size, request);
         return ResponseEntity.ok(events);
 
     }

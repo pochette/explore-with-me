@@ -9,6 +9,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.burdak.ewmstatsclient.client.StatsClient;
+import ru.burdak.ewmstatsclient.dto.EndpointHitDto;
+import ru.burdak.ewmstatsclient.dto.ViewStatsDto;
 import ru.burdak.mainservice.dto.event.*;
 import ru.burdak.mainservice.dto.request.EventRequestStatusUpdateRequest;
 import ru.burdak.mainservice.dto.request.EventRequestStatusUpdateResult;
@@ -25,6 +28,7 @@ import ru.burdak.mainservice.util.EventSpecification;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -42,13 +46,33 @@ public class EventServiceImpl implements EventService {
     private final LocationRepository locationRepository;
     private final CategoryRepository categoryRepository;
     private final RequestRepository requestRepository;
+    private final StatsClient statsClient;
 
     @Override
     public EventFullDto getEventByIdPublic(HttpServletRequest httpRequest, Long id) {
         Event event = eventRepository.findByIdAndStateEquals(id, EventState.PUBLISHED)
             .orElseThrow(() -> new NotFoundException("Event with id= " + id + " was not found"));
         log.info("Found event with id= {}", id);
-        //TODO добавить сохранение статистики просмотров
+
+        String uri = httpRequest.getRequestURI();
+
+        statsClient.saveHit(new EndpointHitDto(
+            null,
+            "ewm-main-service",
+            uri,
+            httpRequest.getRemoteAddr(),
+            LocalDateTime.now()
+        ));
+
+        List<ViewStatsDto> stats = statsClient.getStats(event.getCreatedOn(),
+            LocalDateTime.now().plusSeconds(1),
+            List.of(uri),
+            true);
+
+        Long view = stats.isEmpty() ? 0L : stats.getFirst().hits();
+
+        event.setViews(view);
+
         return EventMapper.toFullDto(event);
     }
 
@@ -68,7 +92,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<EventFullDto> getEventsByAdmin(List<Long> users, List<EventState> states, List<Long> categories,
                                                LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from,
-                                               Integer size) {
+                                               Integer size, HttpServletRequest request) {
         Pageable pageable = PageRequest.of(from / size, size, Sort.by("eventDate").ascending());
 
         Specification<Event> spec =
@@ -84,7 +108,9 @@ public class EventServiceImpl implements EventService {
             "Found {} events with filters: users={}, states={}, categories={}, rangeStart={}, rangeEnd={}, from={}, " +
                 "size={}",
             events.size(), users, states, categories, rangeStart, rangeEnd, from, size);
-
+        statsClient.saveHit(
+            new EndpointHitDto(null, "ewm-main-service", request.getRequestURI(), request.getRemoteAddr(),
+                LocalDateTime.now()));
         return events.stream()
             .map(EventMapper::toFullDto)
             .toList();
@@ -94,7 +120,7 @@ public class EventServiceImpl implements EventService {
     public List<EventShortDto> getEventsByFilterPublic(String text, Set<Long> categoriesIds, Boolean paid,
                                                        LocalDateTime rangeStart, LocalDateTime rangeEnd,
                                                        Boolean onlyAvailable, EventSortAvailable sortAvailable,
-                                                       Integer from, Integer size) {
+                                                       Integer from, Integer size, HttpServletRequest request) {
         Pageable pageable = PageRequest.of(
             from / size,
             size,
@@ -113,6 +139,23 @@ public class EventServiceImpl implements EventService {
                 "onlyAvailable={}, sortAvailable={}",
             events.size(), text, categoriesIds, paid, rangeStart, rangeEnd, onlyAvailable, sortAvailable);
         //TODO добавить сохранение статистики просмотров
+        statsClient.saveHit(
+            new EndpointHitDto(null, "ewm-main-service", request.getRequestURI(), request.getRemoteAddr(),
+                LocalDateTime.now()));
+        List<String> eventUris = events.stream()
+            .map(event -> "/events/" + event.getId())
+            .toList();
+        List<ViewStatsDto> statsList = statsClient.getStats(
+            LocalDateTime.now().minusYears(100),
+            LocalDateTime.now().plusSeconds(1),
+            eventUris, true);
+
+        Map<String, Long> viewsByUri = statsList.stream()
+            .collect(Collectors.toMap(ViewStatsDto::uri, ViewStatsDto::hits));
+
+        events.forEach(event ->
+            event.setViews(viewsByUri.getOrDefault("/events/" + event.getId(), 0L)));
+
         return events.stream()
             .map(EventMapper::toShortDto)
             .toList();

@@ -1,4 +1,4 @@
-package ru.burdak.statservice.dto;
+package ru.burdak.ewmstatsclient.dto;
 
 import jakarta.validation.constraints.NotBlank;
 

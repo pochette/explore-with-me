@@ -46,10 +46,12 @@ public interface EventService {
      * @param rangeEnd   the range end
      * @param from       the from
      * @param size       the size
+     * @param request
      * @return the events by admin
      */
     List<EventFullDto> getEventsByAdmin(List<Long> users, List<EventState> states, List<Long> categories,
-                                        LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from, Integer size);
+                                        LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from, Integer size,
+                                        HttpServletRequest request);
 
     /**
      * Gets events by filter public.
@@ -63,12 +65,13 @@ public interface EventService {
      * @param sortAvailable the sort available
      * @param from          the from
      * @param size          the size
+     * @param request
      * @return the events by filter public
      */
     List<EventShortDto> getEventsByFilterPublic(String text, Set<Long> categoriesIds, Boolean paid,
                                                 LocalDateTime rangeStart, LocalDateTime rangeEnd,
                                                 Boolean onlyAvailable, EventSortAvailable sortAvailable,
-                                                Integer from, Integer size);
+                                                Integer from, Integer size, HttpServletRequest request);
 
     /**
      * Gets events by user id.

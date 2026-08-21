@@ -1,7 +1,7 @@
 package ru.burdak.statservice.mapper;
 
 import lombok.experimental.UtilityClass;
-import ru.burdak.statservice.dto.EndpointHitDto;
+import ru.burdak.ewmstatsclient.dto.EndpointHitDto;
 import ru.burdak.statservice.model.App;
 import ru.burdak.statservice.model.Hit;
 
