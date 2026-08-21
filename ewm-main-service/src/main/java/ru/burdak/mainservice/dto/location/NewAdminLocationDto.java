@@ -2,7 +2,7 @@ package ru.burdak.mainservice.dto.location;
 
 import jakarta.validation.constraints.*;
 
-public record NewLocationDto(
+public record NewAdminLocationDto(
     @NotBlank(message = "Название локации не должно быть пустым")
     @Size(max = 255, message = "Название локации не должно превышать 255 символов")
     String name,

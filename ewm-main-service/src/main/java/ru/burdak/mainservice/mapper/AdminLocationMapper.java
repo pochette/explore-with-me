@@ -2,7 +2,7 @@ package ru.burdak.mainservice.mapper;
 
 import lombok.experimental.UtilityClass;
 import ru.burdak.mainservice.dto.location.AdminLocationDto;
-import ru.burdak.mainservice.dto.location.NewLocationDto;
+import ru.burdak.mainservice.dto.location.NewAdminLocationDto;
 import ru.burdak.mainservice.dto.location.UpdateAdminLocationDto;
 import ru.burdak.mainservice.model.AdminLocation;
 
@@ -17,7 +17,7 @@ public class AdminLocationMapper {
             location.getRadius());
     }
 
-    public AdminLocation toEntity(NewLocationDto dto) {
+    public AdminLocation toEntity(NewAdminLocationDto dto) {
         AdminLocation location = new AdminLocation();
         location.setLat(dto.lat());
         location.setLon(dto.lon());
