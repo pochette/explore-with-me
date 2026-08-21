@@ -286,7 +286,7 @@ public class EventServiceImpl implements EventService {
             request.setStatus(RequestStatus.REJECTED);
             rejectedRequests.add(RequestMapper.toDto(request));
         }
-        log.info("Rejected requests: {}" , rejectedRequests);
+        log.info("Rejected requests: {}", rejectedRequests);
         log.info("Confirmed requests: {}", confirmedRequests);
         return new EventRequestStatusUpdateResult(confirmedRequests, rejectedRequests);
     }

@@ -11,5 +11,5 @@ public record UserDto(
     String email,
 
     @NotBlank
-    String name ) {
+    String name) {
 }

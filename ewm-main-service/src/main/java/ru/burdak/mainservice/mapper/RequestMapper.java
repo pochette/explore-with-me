@@ -4,8 +4,6 @@ import lombok.experimental.UtilityClass;
 import ru.burdak.mainservice.dto.request.ParticipationRequestDto;
 import ru.burdak.mainservice.model.Request;
 
-import java.time.LocalDateTime;
-
 @UtilityClass
 public class RequestMapper {
     public ParticipationRequestDto toDto(Request request) {
@@ -19,6 +17,5 @@ public class RequestMapper {
                 .getId(),
             request.getStatus());
     }
-
 
 }

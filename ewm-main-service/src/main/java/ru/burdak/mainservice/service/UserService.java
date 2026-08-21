@@ -1,8 +1,6 @@
 package ru.burdak.mainservice.service;
 
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.constraints.Positive;
 import ru.burdak.mainservice.dto.user.NewUserRequest;
 import ru.burdak.mainservice.dto.user.UserDto;
 

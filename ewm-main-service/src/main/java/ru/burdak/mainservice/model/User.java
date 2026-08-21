@@ -1,7 +1,6 @@
 package ru.burdak.mainservice.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +12,8 @@ import java.util.Objects;
 @Setter
 @Getter
 @Entity
-@NoArgsConstructor @AllArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "users", schema = "public")
 public class User {
     @Id
@@ -25,7 +25,6 @@ public class User {
 
     @Column(name = "name", nullable = false, length = 250)
     private String name;
-
 
     @Override
     public final int hashCode() {
