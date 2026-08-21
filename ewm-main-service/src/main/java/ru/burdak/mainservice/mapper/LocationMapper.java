@@ -6,6 +6,10 @@ import ru.burdak.mainservice.model.Location;
 
 @UtilityClass
 public class LocationMapper {
+    public LocationDto toDto(Location location) {
+        return new LocationDto(location.getLat(), location.getLon());
+    }
+
     public Location toEntity(LocationDto dto) {
         Location location = new Location();
         location.setLat(dto.lat());
@@ -13,7 +17,4 @@ public class LocationMapper {
         return location;
     }
 
-    public LocationDto toDto(Location location) {
-        return new LocationDto(location.getLat(), location.getLon());
-    }
 }
