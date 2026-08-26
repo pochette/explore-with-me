@@ -29,12 +29,11 @@ public interface EventService {
     /**
      * Gets event by user id and event id.
      *
-     * @param request the request
      * @param userId  the user id
      * @param eventId the event id
      * @return the event by user id and event id
      */
-    EventFullDto getEventByUserIdAndEventId(HttpServletRequest request, Long userId, Long eventId);
+    EventFullDto getEventByUserIdAndEventId(Long userId, Long eventId);
 
     /**
      * Gets events by admin.
@@ -49,9 +48,9 @@ public interface EventService {
      * @param request
      * @return the events by admin
      */
-    List<EventFullDto> getEventsByAdmin(List<Long> users, List<EventState> states, List<Long> categories,
-                                        LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from, Integer size,
-                                        HttpServletRequest request);
+    List<EventFullDto> getEventsByFilterAdmin(List<Long> users, List<EventState> states, List<Long> categories,
+                                              LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from, Integer size,
+                                              HttpServletRequest request);
 
     /**
      * Gets events by filter public.
@@ -76,13 +75,12 @@ public interface EventService {
     /**
      * Gets events by user id.
      *
-     * @param request the request
-     * @param userId  the user id
-     * @param from    the from
-     * @param size    the size
+     * @param userId the user id
+     * @param from   the from
+     * @param size   the size
      * @return the events by user id
      */
-    Set<EventShortDto> getEventsByUserId(HttpServletRequest request, Long userId, Integer from, Integer size);
+    Set<EventShortDto> getEventsByUserId(Long userId, Integer from, Integer size);
 
     /**
      * Получение информации о запросах на участие в событии текущего пользователя

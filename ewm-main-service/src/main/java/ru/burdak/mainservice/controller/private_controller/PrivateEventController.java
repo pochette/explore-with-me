@@ -34,7 +34,7 @@ public class PrivateEventController {
         @PathVariable(name = "eventId", required = false) @Positive Long eventId) {
         log.info("{} {}?{}", request.getMethod(), request.getRequestURI(), request.getQueryString());
         return new ResponseEntity<>(
-            eventService.getEventByUserIdAndEventId(request, userId, eventId),
+            eventService.getEventByUserIdAndEventId(userId, eventId),
             HttpStatus.OK
         );
     }
@@ -46,7 +46,7 @@ public class PrivateEventController {
         @RequestParam(name = "from", required = false, defaultValue = "0") @PositiveOrZero Integer from,
         @RequestParam(name = "size", required = false, defaultValue = "10") @Positive Integer size) {
         log.info("{} {}?{}", request.getMethod(), request.getRequestURI(), request.getQueryString());
-        return new ResponseEntity<>(eventService.getEventsByUserId(request, userId, from, size),
+        return new ResponseEntity<>(eventService.getEventsByUserId(userId, from, size),
             HttpStatus.OK
         );
     }

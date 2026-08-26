@@ -47,7 +47,7 @@ public class AdminEventController {
                 "rangeStart={}, rangeEnd={}, from={}, size={}", users, states, categories, rangeStart, rangeEnd, from,
             size);
         return new ResponseEntity<>(
-            eventService.getEventsByAdmin(users, states, categories, rangeStart, rangeEnd, from, size, request),
+            eventService.getEventsByFilterAdmin(users, states, categories, rangeStart, rangeEnd, from, size, request),
             HttpStatus.OK);
     }
 

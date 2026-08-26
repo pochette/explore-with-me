@@ -78,7 +78,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional(readOnly = true)
-    public EventFullDto getEventByUserIdAndEventId(HttpServletRequest request, Long userId, Long eventId) {
+    public EventFullDto getEventByUserIdAndEventId(Long userId, Long eventId) {
         Event event = eventRepository
             .findByInitiator_IdAndId(userId, eventId)
             .orElseThrow(() ->
@@ -90,9 +90,9 @@ public class EventServiceImpl implements EventService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<EventFullDto> getEventsByAdmin(List<Long> users, List<EventState> states, List<Long> categories,
-                                               LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from,
-                                               Integer size, HttpServletRequest request) {
+    public List<EventFullDto> getEventsByFilterAdmin(List<Long> users, List<EventState> states, List<Long> categories,
+                                                     LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from,
+                                                     Integer size, HttpServletRequest request) {
         Pageable pageable = PageRequest.of(from / size, size, Sort.by("eventDate").ascending());
 
         Specification<Event> spec =
@@ -163,7 +163,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional(readOnly = true)
-    public Set<EventShortDto> getEventsByUserId(HttpServletRequest request, Long userId, Integer from, Integer size) {
+    public Set<EventShortDto> getEventsByUserId(Long userId, Integer from, Integer size) {
         Pageable pageable = PageRequest.of(from / size, size, Sort
             .by("id")
             .ascending());

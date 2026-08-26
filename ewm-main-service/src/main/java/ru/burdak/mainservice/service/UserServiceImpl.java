@@ -25,7 +25,6 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
-
     @Override
     public void deleteUser(HttpServletRequest request, Long id) {
         if (!userRepository.existsById(id)) {
