@@ -1,411 +1,113 @@
 # Explore With Me
 
-Explore With Me - это backend-приложение для публикации событий и поиска компании для участия в них. Пользователи могут создавать события, просматривать опубликованные мероприятия, отправлять заявки на участие, подтверждать или отклонять заявки к своим событиям, а администратор может управлять пользователями, категориями, событиями и подборками.
+> Афиша событий на микросервисах: публикация мероприятий, заявки на участие, модерация и статистика просмотров.
 
-Проект состоит из основного сервиса и отдельного сервиса статистики, который сохраняет информацию о просмотрах публичных эндпоинтов и позволяет получать количество просмотров событий.
+![Java](https://img.shields.io/badge/Java_21-ED8B00?logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot_3.3-6DB33F?logo=springboot&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL_17-4169E1?logo=postgresql&logoColor=white)
+![Liquibase](https://img.shields.io/badge/Liquibase-2962FF?logo=liquibase&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker_Compose-2496ED?logo=docker&logoColor=white)
+[![API Tests](https://github.com/pochette/explore-with-me/actions/workflows/api-tests.yml/badge.svg)](https://github.com/pochette/explore-with-me/actions/workflows/api-tests.yml)
 
-## Описание проекта
+**Русский** · [English](README.en.md)
 
-Приложение реализовано как многомодульный Maven-проект:
+## О проекте
 
-- `ewm-main-service` - основной сервис приложения;
-- `ewm-stat-service` - сервис статистики;
-- `ewm-stats-client` - общий клиентский модуль для взаимодействия со статистикой.
+Бэкенд сервиса, где пользователи публикуют события и собирают участников. Система состоит из двух независимых сервисов, у каждого своя база данных.
 
-## Технологии
+- **Основной сервис** — пользователи, категории, события, заявки на участие и подборки. API разделён на три уровня доступа: публичный, пользовательский и администраторский.
+- **Сервис статистики** — фиксирует обращения к публичным эндпоинтам и считает просмотры событий, в том числе уникальные по IP.
 
-- Java 21
-- Spring Boot 3.3.5
-- Spring Web
-- Spring Data JPA
-- Spring Validation
-- Spring Boot Actuator
-- Hibernate
-- PostgreSQL
-- Liquibase
-- Maven
-- Docker
-- Docker Compose
-- Lombok
-- Checkstyle
-- SpotBugs
+**Ключевые решения:**
 
-## Архитектура проекта
+- **Разделение ответственности.** Просмотры не хранятся в основном сервисе: он получает их из сервиса статистики через отдельный HTTP-клиент `ewm-stats-client`.
+- **Жизненный цикл события.** Статусы `PENDING → PUBLISHED / CANCELED` и правила модерации: дата события — не раньше чем через 2 часа после создания, а при публикации администратором — не раньше чем через 1 час. Правило вынесено в собственную аннотацию валидации.
+- **Заявки с ограничением мест.** Учёт лимита участников и пакетное подтверждение или отклонение заявок; нарушение правил возвращается со статусом 409.
+- **Динамический поиск.** Фильтры публичного и админского поиска собираются через JPA Specification (Criteria API).
+- **Схема под контролем.** Миграции Liquibase для обеих баз, multi-stage Dockerfile, четыре контейнера поднимаются одной командой.
+- **Качество кода.** Maven-профиль `check` запускает Checkstyle и SpotBugs, CI на GitHub Actions прогоняет Postman-тесты API на каждый pull request.
 
-```text
-explore-with-me/
-├── ewm-main-service/          # Основной сервис приложения
-│   ├── controller/            # REST-контроллеры
-│   ├── service/               # Бизнес-логика
-│   ├── repository/            # Работа с базой данных
-│   ├── model/                 # JPA-сущности
-│   ├── dto/                   # DTO для API
-│   ├── mapper/                # Маппинг сущностей и DTO
-│   ├── exception/             # Обработка ошибок
-│   ├── validation/            # Валидация данных
-│   └── resources/db/changelog # Liquibase-миграции
-│
-├── ewm-stat-service/          # Сервис статистики
-│   ├── controller/            # API статистики
-│   ├── service/               # Логика сбора статистики
-│   ├── repository/            # Запросы к базе статистики
-│   ├── model/                 # Сущности статистики
-│   ├── mapper/                # Маппинг статистики
-│   └── resources/db/changelog # Liquibase-миграции
-│
-├── ewm-stats-client/          # Общий модуль статистики
-│   ├── client/                # HTTP-клиент статистики
-│   └── dto/                   # DTO статистики
-│
-├── docker-compose.yml
-└── pom.xml
+## Стек
+
+| Область | Технологии |
+| --- | --- |
+| Язык и фреймворк | Java 21, Spring Boot 3.3 (Web, Data JPA, Validation, Actuator) |
+| Данные | PostgreSQL 17, Hibernate, Liquibase |
+| Взаимодействие сервисов | REST, собственный HTTP-клиент статистики |
+| Качество | Checkstyle, SpotBugs, Postman, GitHub Actions |
+| Сборка и запуск | Maven (многомодульный проект), Docker, Docker Compose |
+
+## Архитектура
+
+```mermaid
+flowchart LR
+    C[Клиент] --> M[ewm-main-service :8080]
+    M -- POST /hit, GET /stats --> S[ewm-stat-service :9090]
+    M --> DB1[(ewm-db)]
+    S --> DB2[(stats-db)]
 ```
 
-## Модули
-
-### ewm-main-service
-
-Основной сервис содержит API приложения.
-
-Функциональность:
-
-- управление пользователями;
-- управление категориями;
-- создание и редактирование событий;
-- модерация событий администратором;
-- поиск опубликованных событий;
-- подача заявок на участие;
-- подтверждение и отклонение заявок;
-- управление подборками событий;
-- получение статистики просмотров событий.
-
-Сервис запускается на порту:
-
 ```text
-8080
+explore-with-me
+├── ewm-main-service/   # основной сервис: controller (public/private/admin) → service → repository
+├── ewm-stat-service/   # сервис статистики
+└── ewm-stats-client/   # общий модуль: DTO и HTTP-клиент статистики
 ```
 
-### ewm-stat-service
+## Быстрый старт
 
-Сервис статистики отвечает за сохранение и получение информации о посещениях.
+Нужны Docker Desktop и свободные порты 8080 и 9090.
 
-Функциональность:
-
-- сохранение информации о запросе к endpoint;
-- получение статистики по диапазону дат;
-- фильтрация статистики по URI;
-- подсчет обычных и уникальных просмотров.
-
-Сервис запускается на порту:
-
-```text
-9090
-```
-
-### ewm-stats-client
-
-Общий модуль для работы со статистикой.
-
-Содержит:
-
-- `EndpointHitDto` - DTO для сохранения информации о запросе;
-- `ViewStatsDto` - DTO для получения статистики;
-- `StatsClient` - HTTP-клиент для обращения из основного сервиса к сервису статистики.
-
-Модуль не является самостоятельным Spring Boot-приложением.
-
-## Запуск проекта
-
-### Требования
-
-- Java 21
-- Maven 3.8+
-- Docker
-- Docker Compose
-
-### Запуск через Docker Compose
-
-```powershell
+```bash
 docker compose up --build
 ```
 
-После запуска сервисы будут доступны:
+- Основной сервис: http://localhost:8080
+- Сервис статистики: http://localhost:9090
 
-```text
-Main Service:  http://localhost:8080
-Stats Service: http://localhost:9090
+Остановка: `docker compose down`. Флаг `-v` удаляет тома, и при следующем запуске миграции применятся заново.
+
+<details>
+<summary><b>Сборка без Docker</b></summary>
+
+```bash
+mvn clean package -DskipTests        # все модули
+mvn -pl ewm-main-service -am package # только основной сервис
+mvn -Pcheck install                  # с Checkstyle и SpotBugs
 ```
 
-Остановить контейнеры:
+Переменные окружения: `SPRING_DATASOURCE_URL`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `STATS_SERVER_URL`.
 
-```powershell
-docker compose down
-```
+</details>
 
-Остановить контейнеры и удалить volume с базами данных:
+## API
 
-```powershell
-docker compose down -v
-```
+Спецификации OpenAPI лежат в корне репозитория: [основной сервис](ewm-main-service-spec.json), [статистика](ewm-stats-service-spec.json).
 
-Команда `down -v` полезна, если нужно пересоздать базы и заново применить Liquibase-миграции.
+| Уровень | Эндпоинты |
+| --- | --- |
+| Public | `GET /events`, `GET /events/{id}`, `GET /categories[/{catId}]`, `GET /compilations[/{compId}]` |
+| Private | `/users/{userId}/events` — CRUD своих событий и заявок к ним; `/users/{userId}/requests` — заявки на участие и их отмена |
+| Admin | `/admin/users`, `/admin/categories`, `/admin/events` (модерация), `/admin/compilations` |
+| Статистика | `POST /hit`, `GET /stats?start=&end=&uris=&unique=` |
 
-## Сборка проекта
+Публичный поиск возвращает только опубликованные события. Он поддерживает текстовый поиск по аннотации и описанию без учёта регистра, фильтры и сортировку по дате или числу просмотров.
 
-Собрать все модули:
+Ошибки возвращаются в едином формате `{status, reason, message, timestamp}` со статусами 400 / 404 / 409 / 500.
 
-```powershell
-mvn clean install
-```
+## Хранение данных
 
-Собрать без запуска тестов:
+| Сервис | Сущности |
+| --- | --- |
+| Основной | `User`, `Category`, `Event`, `Location`, `Request`, `Compilation` |
+| Статистика | `App`, `Hit` |
 
-```powershell
-mvn clean package -DskipTests
-```
+Статусы событий: `PENDING`, `PUBLISHED`, `CANCELED`. Статусы заявок: `PENDING`, `CONFIRMED`, `REJECTED`, `CANCELED`.
 
-Собрать основной сервис вместе с зависимостями:
+## Тестирование
 
-```powershell
-mvn -pl ewm-main-service -am package
-```
+API проверяется Postman-коллекциями в GitHub Actions ([workflow](.github/workflows/api-tests.yml)) на каждый pull request: оба сервиса поднимаются в Docker, и автотесты проверяют все эндпоинты.
 
-Собрать сервис статистики вместе с зависимостями:
+## Автор
 
-```powershell
-mvn -pl ewm-stat-service -am package
-```
-
-Запустить проверки качества кода:
-
-```powershell
-mvn -Pcheck install
-```
-
-## Конфигурация
-
-### Main Service
-
-Основные переменные окружения:
-
-```properties
-SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/ewm_main
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-STATS_SERVER_URL=http://stats-server:9090
-```
-
-### Stats Service
-
-Основные переменные окружения:
-
-```properties
-SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/ewm_stats
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-```
-
-## API основного сервиса
-
-### Public API
-
-Публичные эндпоинты доступны без авторизации.
-
-```text
-GET /categories
-GET /categories/{catId}
-
-GET /compilations
-GET /compilations/{compId}
-
-GET /events
-GET /events/{id}
-```
-
-Особенности публичного поиска событий:
-
-- возвращаются только опубликованные события;
-- текстовый поиск выполняется по аннотации и описанию без учета регистра;
-- если диапазон дат не указан, возвращаются только будущие события;
-- каждое событие содержит количество подтвержденных заявок и просмотров;
-- информация о публичных запросах сохраняется в сервисе статистики.
-
-### Private API
-
-Эндпоинты для пользователей.
-
-```text
-GET /users/{userId}/events
-POST /users/{userId}/events
-GET /users/{userId}/events/{eventId}
-PATCH /users/{userId}/events/{eventId}
-
-GET /users/{userId}/events/{eventId}/requests
-PATCH /users/{userId}/events/{eventId}/requests
-
-GET /users/{userId}/requests
-POST /users/{userId}/requests
-PATCH /users/{userId}/requests/{requestId}/cancel
-```
-
-### Admin API
-
-Эндпоинты администратора.
-
-```text
-GET /admin/users
-POST /admin/users
-DELETE /admin/users/{userId}
-
-POST /admin/categories
-PATCH /admin/categories/{catId}
-DELETE /admin/categories/{catId}
-
-GET /admin/events
-PATCH /admin/events/{eventId}
-
-POST /admin/compilations
-PATCH /admin/compilations/{compId}
-DELETE /admin/compilations/{compId}
-```
-
-## API сервиса статистики
-
-### Сохранение информации о запросе
-
-```http
-POST /hit
-```
-
-Пример тела запроса:
-
-```json
-{
-  "app": "ewm-main-service",
-  "uri": "/events/1",
-  "ip": "127.0.0.1",
-  "timestamp": "2026-08-21 12:00:00"
-}
-```
-
-### Получение статистики
-
-```http
-GET /stats
-```
-
-Пример запроса:
-
-```http
-GET /stats?start=2026-08-21%2000%3A00%3A00&end=2026-08-22%2000%3A00%3A00&uris=/events/1&unique=true
-```
-
-Параметры:
-
-- `start` - начало диапазона;
-- `end` - конец диапазона;
-- `uris` - список URI, необязательный параметр;
-- `unique` - учитывать только уникальные IP, по умолчанию `false`.
-
-Пример ответа:
-
-```json
-[
-  {
-    "app": "ewm-main-service",
-    "uri": "/events/1",
-    "hits": 1
-  }
-]
-```
-
-## Модель данных
-
-Основные сущности основного сервиса:
-
-- `User` - пользователь;
-- `Category` - категория события;
-- `Event` - событие;
-- `Location` - координаты события;
-- `Request` - заявка на участие;
-- `Compilation` - подборка событий.
-
-Основные сущности сервиса статистики:
-
-- `App` - приложение, отправившее информацию о запросе;
-- `Hit` - сохраненный запрос к endpoint.
-
-## Статусы
-
-Статусы событий:
-
-```text
-PENDING
-PUBLISHED
-CANCELED
-```
-
-Статусы заявок:
-
-```text
-PENDING
-CONFIRMED
-REJECTED
-CANCELED
-```
-
-## Миграции базы данных
-
-Для управления схемой базы данных используется Liquibase.
-
-Главный changelog основного сервиса:
-
-```text
-ewm-main-service/src/main/resources/db/changelog/db.changelog-master.yaml
-```
-
-Главный changelog сервиса статистики:
-
-```text
-ewm-stat-service/src/main/resources/db/changelog/db.changelog-master.yaml
-```
-
-## Обработка ошибок
-
-Ошибки возвращаются в едином формате:
-
-```json
-{
-  "status": "BAD_REQUEST",
-  "reason": "Incorrectly made request.",
-  "message": "Описание ошибки",
-  "timestamp": "2026-08-21 12:00:00"
-}
-```
-
-Для разных ситуаций используются соответствующие HTTP-статусы:
-
-- `400 BAD_REQUEST` - некорректный запрос;
-- `404 NOT_FOUND` - объект не найден;
-- `409 CONFLICT` - нарушение условий выполнения операции или целостности данных;
-- `500 INTERNAL_SERVER_ERROR` - внутренняя ошибка сервера.
-
-## Особенности реализации
-
-- Проект разделен на несколько Maven-модулей.
-- Основной сервис не хранит просмотры как источник истины, а получает их из сервиса статистики.
-- Для публичных запросов к событиям сохраняется информация о посещении.
-- Для подсчета уникальных просмотров используется IP пользователя.
-- Схема базы данных управляется через Liquibase.
-- Dockerfiles используют multi-stage build, поэтому приложение можно пересобирать командой `docker compose up --build`.
-
-## Проверка
-
-Проект проверяется автоматическими Postman-тестами и CI-пайплайном.
-
-Перед отправкой изменений рекомендуется выполнить:
-
-```powershell
-mvn clean install
-docker compose up --build
-```
+**Андрей Бурдак** — [GitHub](https://github.com/pochette) · [Telegram @burdak_aa](https://t.me/burdak_aa) · [burdak.andrew@gmail.com](mailto:burdak.andrew@gmail.com)
